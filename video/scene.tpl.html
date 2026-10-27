@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../app/static/fonts/plex.css">
+<link rel="stylesheet" href="../../app/static/app.css">
+<style>
+html, body { margin: 0; width: 1920px; height: 1080px; overflow: hidden; background: var(--paper); font-size: 28px; }
+#stage { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+.scene { position: absolute; inset: 0; padding: 72px 96px; opacity: 0; }
+.kick { font: 500 24px var(--mono); color: var(--ink-2); letter-spacing: .02em; display: flex; gap: 18px; align-items: baseline; }
+.kick b { color: var(--blood); font-weight: 600; }
+.rule { height: 3px; background: var(--ink); margin: 18px 0 34px; }
+h1.big { font-size: 112px; line-height: 1; letter-spacing: -.035em; margin: 0; }
+h2.t { font-size: 52px; line-height: 1.1; margin: 0 0 16px; letter-spacing: -.02em; }
+p.l { font-size: 34px; line-height: 1.4; margin: 0 0 18px; color: var(--ink); max-width: 760px; }
+p.l.m { color: var(--ink-2); }
+.hid { opacity: 0; }
+.mono { font-family: var(--mono); }
+.cols { display: grid; grid-template-columns: 760px 1fr; gap: 64px; height: 840px; }
+.panel { border: 2px solid var(--ink); background: #FBFAF6; padding: 26px 30px; border-radius: 2px; }
+.panel h3 { margin: 0 0 14px; font-size: 26px; color: var(--ink-2); font-weight: 600; }
+.term { background: #1A1D21; color: #F3F0E8; font: 400 26px/1.5 var(--mono); padding: 28px 34px; border-radius: 2px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.term .p { color: #8FC7CE; } .term .e { color: #FF8F8F; font-weight: 600; } .term .d { color: #9AA1A8; }
+.chips { display: flex; flex-wrap: wrap; gap: 12px; }
+.chip { font: 500 26px var(--mono); padding: 6px 16px; border: 2px solid var(--rule-strong); border-radius: 2px; }
+.chip.on { border-color: var(--blood); color: var(--blood-ink); background: var(--blood-wash); }
+.chip.ok { border-color: var(--cold); color: var(--cold); background: var(--cold-wash); }
+.item { display: grid; grid-template-columns: 56px 1fr; align-items: baseline; font-size: 34px; padding: 12px 0; border-bottom: 1px solid var(--rule); }
+.item i { font: 600 26px var(--mono); color: var(--blood); font-style: normal; }
+.item small { display: block; font-size: 26px; color: var(--ink-2); }
+.box { border: 3px solid var(--ink); padding: 22px 28px; background: #FBFAF6; border-radius: 2px; }
+.box h3 { margin: 0 0 8px; font-size: 38px; } .box ul { margin: 0; padding-left: 28px; font-size: 27px; color: var(--ink-2); line-height: 1.5; }
+.box.pg { border-color: var(--cold); } .box.mg { border-color: #4B7F3A; } .box.app { border-style: dashed; }
+.arrow { position: absolute; height: 4px; background: var(--ink); transform-origin: left center; }
+.row { display: grid; grid-template-columns: 330px 1fr 190px; gap: 24px; align-items: center; font-size: 30px; margin: 20px 0; }
+.row .trk { height: 38px; background: var(--paper-2); position: relative; }
+.row .fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--ink); }
+.row .fill.g { background: var(--cold); } .row .fill.r { background: var(--blood); }
+.row .v { font: 600 30px var(--mono); text-align: right; }
+.big-n { font: 600 150px/1 var(--mono); color: var(--blood); letter-spacing: -.04em; }
+.tbl2 { border-collapse: collapse; font: 500 26px var(--mono); }
+.tbl2 th { text-align: left; color: var(--ink-2); font-weight: 600; padding: 6px 18px; border-bottom: 2px solid var(--rule-strong); }
+.tbl2 td { padding: 6px 18px; border-bottom: 1px solid var(--rule); }
+.tbl2 tr.dup td { background: var(--blood-wash); }
+.lane { position: relative; height: 120px; border-bottom: 2px solid var(--rule-strong); display: flex; align-items: center; gap: 22px; font-size: 30px; }
+.ev { font: 500 26px var(--mono); padding: 8px 16px; border: 2px solid var(--ink); background: #FBFAF6; }
+.ev.bad { border-color: var(--blood); background: var(--blood-wash); color: var(--blood-ink); }
+.ev.good { border-color: var(--cold); background: var(--cold-wash); color: var(--cold); }
+.acid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+.acid div { border-top: 5px solid var(--ink); padding-top: 12px; font-size: 28px; color: var(--ink-2); } .acid b { display: block; font-size: 46px; color: var(--ink); }
+.code { position: relative; font: 400 26px/1.55 var(--mono); white-space: pre-wrap; }
+.code .ghost { visibility: hidden; } .code .typed { position: absolute; inset: 0; }
+.er-wrap { position: relative; width: 1728px; height: 650px; border: 2px solid var(--ink); background: #FBFAF6; overflow: hidden; }
+.er-wrap svg { width: 100%; height: 100%; display: block; }
+.er-wrap g.node.hl rect, .er-wrap g.hl rect { stroke: var(--blood) !important; stroke-width: 3px !important; }
+.er-cap { position: absolute; left: 0; right: 0; bottom: 0; }
+.foot { position: absolute; left: 96px; right: 96px; bottom: 44px; display: flex; justify-content: space-between; font: 500 22px var(--mono); color: var(--ink-2); }
+.logo { display: flex; align-items: center; gap: 28px; }
+.item i.tick { color: var(--cold); }
+</style></head>
+<body><div id="stage">
+
+<!-- 1 title -->
+<section class="scene" id="s-title">
+  <div style="position:absolute;left:96px;top:300px;width:1700px">
+    <div class="logo hid" data-s="0" data-d="0.0">
+      <svg width="132" height="132" viewBox="0 0 26 26"><path d="M13 2C13 2 5 11 5 16a8 8 0 0 0 16 0c0-5-8-14-8-14Z" fill="#A3132A"/><path d="M9 17h8M13 13v8" stroke="#F3F0E8" stroke-width="2"/></svg>
+      <h1 class="big">HemoGrid</h1>
+    </div>
+    <p class="hid" data-s="0" data-d="0.5" style="font-size:44px;margin:26px 0 0;color:var(--ink-2)">A blood bank database.</p>
+    <p class="hid" data-s="1" style="font-size:58px;line-height:1.2;margin:46px 0 0;max-width:1650px;letter-spacing:-.02em">The database enforces the rules. <span style="color:var(--blood)">The web page stays thin.</span></p>
+  </div>
+  <div class="chips hid" data-s="1" data-d="1.8" style="position:absolute;left:96px;bottom:110px">
+    <span class="chip">ER diagram</span><span class="chip">Normalization</span><span class="chip">SQL objects</span><span class="chip">Indexing</span><span class="chip">Transactions</span><span class="chip">NoSQL</span>
+  </div>
+</section>
+
+<!-- 2 architecture -->
+<section class="scene" id="s-arch">
+  <div class="kick"><b>01</b> Architecture</div><div class="rule"></div>
+  <div style="position:relative;height:800px">
+    <div class="box pg hid" data-s="0" style="position:absolute;left:0;top:120px;width:760px">
+      <h3>PostgreSQL 16</h3><ul><li>system of record</li><li>donors, donations, blood units</li><li>requests, allocations, audit</li><li>constraints, triggers, functions, roles</li></ul></div>
+    <div class="box mg hid" data-s="1" style="position:absolute;left:0;top:470px;width:760px">
+      <h3>MongoDB 7</h3><ul><li>screening reports, one document per donation</li><li>questionnaire differs for every donor</li></ul></div>
+    <div class="box app hid" data-s="2" style="position:absolute;left:1150px;top:300px;width:600px">
+      <h3>Web app (Flask)</h3><ul><li>no business rules</li><li>calls database functions</li><li>shows the database's own messages</li></ul></div>
+    <div class="hid mono" data-s="2" data-d="0.5" style="position:absolute;left:800px;top:330px;width:340px;text-align:center;font-size:25px;color:var(--ink-2)">SELECT allocate_units(…)<br><span style="font-size:60px;color:var(--ink)">&larr;</span></div>
+    <div class="hid mono" data-s="2" data-d="0.9" style="position:absolute;left:800px;top:540px;width:340px;text-align:center;font-size:25px;color:var(--ink-2)">report documents<br><span style="font-size:60px;color:var(--ink)">&larr;</span></div>
+  </div>
+</section>
+
+<!-- 3 ER -->
+<section class="scene" id="s-er">
+  <div class="kick"><b>02</b> ER diagram</div><div class="rule"></div>
+  <div style="position:relative;height:170px;margin-top:-10px">
+    <div class="hid" data-s="0" data-e="1" style="position:absolute;inset:0"><h2 class="t">16 tables, 19 relationships</h2><p class="l m">Read in three steps.</p></div>
+    <div class="hid" data-s="1" data-e="2" style="position:absolute;inset:0">
+      <h2 class="t">Specialization</h2>
+      <p class="l" style="max-width:none;font-size:31px"><b class="mono">PERSON</b> is the superclass of <b class="mono">DONOR</b>, <b class="mono">RECIPIENT</b>, <b class="mono">STAFF</b>. <span style="color:var(--ink-2)">Overlapping and partial: one table per subclass, sharing the key.</span></p></div>
+    <div class="hid" data-s="2" data-e="3" style="position:absolute;inset:0">
+      <h2 class="t">Multivalued attributes</h2>
+      <p class="l" style="max-width:none;font-size:31px">A donor has many phones and attends many camps. <span style="color:var(--ink-2)">Each gets its own table, keyed on both columns.</span></p></div>
+    <div class="hid" data-s="3" style="position:absolute;inset:0">
+      <h2 class="t">From donation to patient</h2>
+      <p class="l" style="max-width:none;font-size:31px"><b class="mono">DONATION</b> → <b class="mono">BLOOD_UNIT</b> → <b class="mono">ALLOCATION</b> → <b class="mono">REQUEST</b>. <span style="color:var(--ink-2)">UNIQUE(unit_id): a unit is reserved at most once.</span></p></div>
+  </div>
+  <div class="er-wrap" id="erwrap"><!--__ER_SVG__--></div>
+</section>
+
+<!-- 4 normalization -->
+<section class="scene" id="s-norm">
+  <div class="kick"><b>03</b> Normalization</div><div class="rule"></div>
+  <div class="cols" style="grid-template-columns:820px 1fr;gap:56px">
+    <div style="position:relative">
+      <div class="hid" data-s="1" data-e="3" style="position:absolute;inset:0">
+        <h2 class="t">Write down the dependencies</h2>
+        <div class="term" style="font-size:25px;padding:22px 26px">donor_id      → name, sex, dob, blood_group
+camp_id       → name, date
+donation_id   → donor_id, camp_id, date
+unit_id       → donation_id, component, expiry
+<span class="e">component     → shelf_days</span>
+donor_id ↠ phone    donor_id ↠ camp_id</div></div>
+      <div class="hid" data-s="3" data-e="5" style="position:absolute;inset:0">
+        <h2 class="t">Why 4NF</h2><p class="l">One table for phones <i>and</i> camps forces a row for every pair.</p><p class="l m">Add one phone number, and every camp needs a new row. Forget one, and the table claims a false fact.</p></div>
+      <div class="hid" data-s="5" style="position:absolute;inset:0">
+        <h2 class="t">One deliberate redundancy</h2><p class="l">A unit's blood group is copied from the donor <b>once</b>, onto its label.</p><p class="l m">It is the printed bag label and never changes, so it cannot go inconsistent, and the hot query skips a join.</p></div>
+      <div class="hid" data-s="0" data-e="1" style="position:absolute;inset:0"><h2 class="t">Functional dependencies, then decompose</h2></div>
+    </div>
+    <div style="position:relative">
+      <div class="hid" data-s="2" data-e="3" style="position:absolute;inset:0">
+        <h3 style="font-size:30px;color:var(--ink-2)">blood_unit before</h3>
+        <table class="tbl2"><tr><th>unit</th><th>component</th><th>shelf_days</th></tr><tr><td>101</td><td>PLT</td><td class="mono" style="color:var(--blood)">5</td></tr><tr><td>102</td><td>PLT</td><td style="color:var(--blood)">5</td></tr><tr><td>103</td><td>PRBC</td><td>42</td></tr></table>
+        <p style="font-size:30px;color:var(--ink-2);margin-top:34px">shelf_days depends on component only: a transitive dependency.</p>
+        <h3 style="font-size:30px;color:var(--ink-2);margin-top:34px" class="hid" data-s="2" data-d="2.6">after</h3>
+        <div class="chips hid" data-s="2" data-d="2.6"><span class="chip ok">blood_unit(unit, component)</span><span class="chip ok">component_type(component, shelf_days)</span></div>
+        <div class="chips hid" data-s="2" data-d="4.2" style="margin-top:26px"><span class="chip ok">every table in BCNF</span></div></div>
+      <div class="hid" data-s="3" data-e="5" style="position:absolute;inset:0">
+        <h3 style="font-size:30px;color:var(--ink-2)">DONOR_CONTACT_CAMP (one table)</h3>
+        <table class="tbl2"><tr><th>donor</th><th>phone</th><th>camp</th></tr>
+          <tr><td>17</td><td>…1122</td><td>3</td></tr><tr class="dup"><td>17</td><td>…1122</td><td>6</td></tr><tr class="dup"><td>17</td><td>…7788</td><td>3</td></tr><tr class="dup"><td>17</td><td>…7788</td><td>6</td></tr></table>
+        <div class="hid" data-s="4" style="margin-top:36px">
+          <h3 style="font-size:30px;color:var(--ink-2)">split: 4NF</h3>
+          <div class="chips"><span class="chip ok">donor_phone(donor, phone)</span><span class="chip ok">donor_camp(donor, camp)</span></div>
+          <p style="font-size:28px;color:var(--ink-2);margin-top:20px">The join of the two gives back the original, losslessly.</p></div></div>
+      <div class="hid" data-s="5" style="position:absolute;inset:0">
+        <div class="panel" style="width:640px"><h3>BAG LABEL</h3><div class="mono" style="font-size:44px;font-weight:600">HG261027-0000858</div>
+          <div style="display:flex;gap:40px;margin-top:14px;font-size:32px"><span><b class="mono" style="color:var(--blood);font-size:56px">O−</b><br>group</span><span><b class="mono" style="font-size:44px">PRBC</b><br>component</span><span><b class="mono" style="font-size:44px">08 Dec</b><br>expires</span></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5 sql -->
+<section class="scene" id="s-sql">
+  <div class="kick"><b>04</b> SQL objects</div><div class="rule"></div>
+  <div class="cols" style="grid-template-columns:700px 1fr;gap:56px">
+    <div>
+      <div class="item hid" data-s="1"><i>01</i><span>Domain CHECK<small>blood_group, component_code</small></span></div>
+      <div class="item hid" data-s="2"><i>02</i><span>Trigger: eligibility<small>age, deferral, 90 / 120-day gap</small></span></div>
+      <div class="item hid" data-s="3"><i>03</i><span>Trigger: unit label<small>group, expiry, barcode</small></span></div>
+      <div class="item hid" data-s="4"><i>04</i><span>Triggers: status + audit<small>no EXPIRED → AVAILABLE</small></span></div>
+      <div class="item hid" data-s="5"><i>05</i><span>Function: allocate_units<small>own group, then soonest expiry</small></span></div>
+      <div class="item hid" data-s="6"><i>06</i><span>Views and roles<small>GRANT + SECURITY DEFINER</small></span></div>
+    </div>
+    <div style="position:relative">
+      <div class="term hid" data-s="1" data-e="2" style="position:absolute;inset:0 0 auto 0"><span class="p">hemogrid=#</span> INSERT INTO recipient VALUES (1, 'Z+');
+<span class="e">ERROR:  value for domain blood_group violates check constraint "blood_group_check"</span></div>
+      <div class="term hid" data-s="2" data-e="3" style="position:absolute;inset:0 0 auto 0"><span class="p">hemogrid=#</span> INSERT INTO donation (donor_id, staff_id, volume_ml)
+           VALUES (:recent_donor, 1, 450);
+<span class="e">ERROR:  Donor Daniel Krishnan gave blood on 2026-10-07; next eligible on 2027-01-05</span>
+<span class="d">CONTEXT:  PL/pgSQL function trg_donation_eligibility()</span></div>
+      <div class="term hid" data-s="3" data-e="4" style="position:absolute;inset:0 0 auto 0"><span class="p">hemogrid=#</span> SELECT record_screening(859, 'PASS', true);
+ units_created = 3
+ <span class="d">barcode            group  component  expires</span>
+ HG261027-0000858   O-     PRBC       2026-12-08
+ HG261027-0000859   O-     PLASMA     2027-10-27
+ HG261027-0000860   O-     PLT        2026-11-01
+<span class="d">-- group, dates and barcode filled in by trg_unit_label</span></div>
+      <div class="term hid" data-s="4" data-e="5" style="position:absolute;inset:0 0 auto 0"><span class="p">hemogrid=#</span> UPDATE blood_unit SET status = 'AVAILABLE' WHERE unit_id = 444;
+<span class="e">ERROR:  Illegal unit transition EXPIRED -> AVAILABLE (unit 444)</span>
+<span class="p">hemogrid=#</span> SELECT unit_id, old_status, new_status FROM unit_audit;
+ 858 |           | AVAILABLE
+ 859 |           | AVAILABLE
+ 860 |           | AVAILABLE</div>
+      <div class="term hid" data-s="5" data-e="6" style="position:absolute;inset:0 0 auto 0"><span class="p">hemogrid=#</span> SELECT allocate_units(35);   <span class="d">-- needs 2, patient is B+</span>
+ request  barcode            group  expires
+ 35       HG260921-0000300   B+     2026-11-02
+ 35       HG260922-0000607   B+     2026-11-03
+<span class="d">-- exact group first, then soonest expiry; O- kept back</span></div>
+      <div class="term hid" data-s="6" style="position:absolute;inset:0 0 auto 0"><span class="p">hemogrid=#</span> SET ROLE hemo_viewer;  DELETE FROM donor;
+<span class="e">ERROR:  permission denied for table donor</span>
+<span class="p">hemogrid=#</span> SELECT blood_group, component, available, reorder_level
+           FROM v_stock WHERE available &lt; reorder_level;
+ O-  PRBC    0  2
+ A-  PRBC    1  2</div>
+    </div>
+  </div>
+</section>
+
+<!-- 6 indexing -->
+<section class="scene" id="s-index">
+  <div class="kick"><b>05</b> Indexing</div><div class="rule"></div>
+  <div class="cols" style="grid-template-columns:1fr;height:auto">
+    <div class="hid" data-s="0" style="font-size:34px;color:var(--ink-2);margin-bottom:6px">400,000 rows, measured with EXPLAIN ANALYZE</div>
+    <div>
+      <div class="hid" data-s="1" data-e="2"><h3 style="font-size:34px;margin:0 0 6px">Allocation lookup: group + component + soonest expiry</h3>
+        <div class="row"><span>Full table scan</span><span class="trk"><span class="fill r" data-grow="1" data-w="1"></span></span><span class="v" data-n="Q1a"></span></div>
+        <div class="row"><span>Partial B+ tree</span><span class="trk"><span class="fill g" data-grow="1" data-w="Q1w"></span></span><span class="v" data-n="Q1b"></span></div>
+        <div class="big-n hid" data-s="1" data-d="2.0" id="q1x"></div><span class="hid mono" data-s="1" data-d="2.0" style="font-size:30px;color:var(--ink-2)">  Index Scan using ix_unit_fefo, 5 entries read</span></div>
+      <div class="hid" data-s="2" data-e="3"><h3 style="font-size:34px;margin:0 0 6px">Barcode scan: one exact match</h3>
+        <div class="row"><span>Full table scan</span><span class="trk"><span class="fill r" data-grow="1" data-w="1"></span></span><span class="v" data-n="Q2a"></span></div>
+        <div class="row"><span>B+ tree</span><span class="trk"><span class="fill g" data-grow="1" data-w="Q2bw"></span></span><span class="v" data-n="Q2b"></span></div>
+        <div class="row"><span>Hash index</span><span class="trk"><span class="fill g" data-grow="1" data-w="Q2cw"></span></span><span class="v" data-n="Q2c"></span></div>
+        <p class="l m hid" data-s="2" data-d="2.4" style="max-width:1400px">Hash is O(1) but answers equality only.</p></div>
+      <div class="hid" data-s="3"><h3 style="font-size:34px;margin:0 0 6px">Range: units expiring in 7 days</h3>
+        <div class="row"><span>No index</span><span class="trk"><span class="fill r" data-grow="1" data-w="1"></span></span><span class="v" data-n="Q3a"></span></div>
+        <div class="row"><span>Hash on expiry</span><span class="trk"><span class="fill r" data-grow="1" data-w="Q3bw"></span></span><span class="v" data-n="Q3b"></span></div>
+        <div class="row"><span>B+ tree on expiry</span><span class="trk"><span class="fill g" data-grow="1" data-w="Q3cw"></span></span><span class="v" data-n="Q3c"></span></div>
+        <p class="l m hid" data-s="3" data-d="2.0" style="max-width:1500px">The planner ignores the hash: it cannot serve BETWEEN. Ordered, linked leaves can.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 7 transactions -->
+<section class="scene" id="s-txn">
+  <div class="kick"><b>06</b> Transactions and concurrency</div><div class="rule"></div>
+  <div style="position:relative;height:850px">
+    <div class="hid" data-s="1" data-e="2" style="position:absolute;inset:0">
+      <h2 class="t">One O− unit left. Two emergency requests.</h2>
+      <div class="lane"><span class="ev">request 41</span><span style="color:var(--ink-2)">needs 1 × red cells, patient O−</span></div>
+      <div class="lane"><span class="ev">request 42</span><span style="color:var(--ink-2)">needs 1 × red cells, patient O−</span></div>
+      <div class="lane" style="border:0"><span class="ev good">unit 876 · O− · AVAILABLE</span></div></div>
+    <div class="hid" data-s="2" data-e="3" style="position:absolute;inset:0">
+      <h2 class="t">Naive read, then write</h2>
+      <div class="lane"><span class="ev">41 reads: unit 876 is free</span><span class="ev hid" data-s="2" data-d="1.4">41 reserves it</span><span class="ev good hid" data-s="2" data-d="2.4">committed</span></div>
+      <div class="lane"><span class="ev">42 reads: unit 876 is free</span><span class="ev hid" data-s="2" data-d="1.9">42 reserves it</span><span class="ev bad hid" data-s="2" data-d="3.0">UniqueViolation</span></div>
+      <p class="l m hid" data-s="2" data-d="3.6" style="max-width:1500px">Both saw it free. Only UNIQUE(allocation.unit_id) prevented the double booking, and one request failed with an error.</p></div>
+    <div class="hid" data-s="3" data-e="4" style="position:absolute;inset:0">
+      <h2 class="t">FOR UPDATE SKIP LOCKED</h2>
+      <div class="lane"><span class="ev">41 locks unit 876</span><span class="ev good hid" data-s="3" data-d="1.4">got 1 unit · FULFILLED</span></div>
+      <div class="lane"><span class="ev">42 skips the locked row</span><span class="ev hid" data-s="3" data-d="1.4">got 0 units · stays OPEN</span></div>
+      <p class="l m hid" data-s="3" data-d="2.4" style="max-width:1500px">No error, no double allocation, nobody waits.</p></div>
+    <div class="hid" data-s="4" data-e="5" style="position:absolute;inset:0">
+      <h2 class="t">SERIALIZABLE isolation</h2>
+      <div class="lane"><span class="ev good">41 commits</span></div>
+      <div class="lane"><span class="ev bad">42 aborted: 40001 serialization_failure</span><span class="ev hid" data-s="4" data-d="1.6">retry</span><span class="ev hid" data-s="4" data-d="2.4">no unit left</span></div></div>
+    <div class="hid" data-s="5" data-e="6" style="position:absolute;inset:0">
+      <h2 class="t">Deadlock</h2>
+      <div class="lane"><span class="ev">A locks unit 5</span><span class="ev">then wants unit 2</span></div>
+      <div class="lane"><span class="ev">B locks unit 2</span><span class="ev bad hid" data-s="5" data-d="1.2">then wants unit 5: 40P01 deadlock detected</span></div>
+      <p class="l m hid" data-s="5" data-d="2.2" style="max-width:1500px">PostgreSQL aborts one victim. Fix: always lock rows in a fixed order.</p></div>
+    <div class="hid" data-s="6" style="position:absolute;inset:0">
+      <h2 class="t">ACID</h2>
+      <div class="acid"><div class="hid" data-s="6" data-d="0.2"><b>Atomic</b>rollback undoes it all</div><div class="hid" data-s="6" data-d="1.0"><b>Consistent</b>constraints and triggers hold</div><div class="hid" data-s="6" data-d="1.8"><b>Isolated</b>no half-done reads</div><div class="hid" data-s="6" data-d="2.6"><b>Durable</b>commit = WAL flush</div></div></div>
+  </div>
+</section>
+
+<!-- 8 nosql -->
+<section class="scene" id="s-nosql">
+  <div class="kick"><b>07</b> NoSQL</div><div class="rule"></div>
+  <div class="cols" style="grid-template-columns:960px 1fr;gap:56px">
+    <div class="term hid" data-s="1" style="font-size:25px;line-height:1.45;align-self:start">{ "donation_id": 214, "hb_gdl": 13.4,
+  "markers": { "hiv": "NEGATIVE", "hbsag": "NEGATIVE",
+               "hcv": "NEGATIVE", "malaria": "NEGATIVE" },
+  "result": "PASS", "flags": [],
+  "questionnaire": {
+    "weight_kg": 71,
+    "on_medication": ["metformin"],
+    "pregnancy_history": "none"   <span class="d">// only some donors</span>
+  } }</div>
+    <div>
+      <p class="l hid" data-s="1" data-d="1.2" style="font-size:32px">Optional and repeating fields: awkward as columns, natural as a document.</p>
+      <div class="hid" data-s="2"><div class="item"><i>1</i><span>PostgreSQL decides PASS / FAIL and creates the units</span></div><div class="item hid" data-s="2" data-d="2.2"><i>2</i><span>Only then the report is written to MongoDB<small>a refusal leaves no orphan document</small></span></div></div>
+      <div class="hid" data-s="3" style="margin-top:34px"><div class="chips"><span class="chip ok">unit status: consistency</span></div><div class="chips" style="margin-top:12px"><span class="chip on">reports: availability</span></div><p class="l m" style="margin-top:22px;font-size:28px">CAP applied per kind of data.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- 9 close -->
+<section class="scene" id="s-close">
+  <div class="kick"><b>08</b> Summary</div><div class="rule"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px 64px;max-width:1700px">
+    <div class="item hid" data-s="0" data-d="0.0"><i class="tick">✓</i><span>Constraints, triggers, functions<small>the rules live in the database</small></span></div>
+    <div class="item hid" data-s="0" data-d="2.2"><i class="tick">✓</i><span>Indexes and locks<small>speed and safe concurrency</small></span></div>
+    <div class="item hid" data-s="0" data-d="4.2"><i class="tick">✓</i><span>Roles and GRANTs<small>each role gets only what it needs</small></span></div>
+    <div class="item hid" data-s="0" data-d="5.6"><i class="tick">✓</i><span>MongoDB<small>flexible screening reports</small></span></div>
+  </div>
+  <div class="hid" data-s="1" style="margin-top:70px"><div class="chips"><span class="chip ok">13 database tests</span><span class="chip ok">13 interface flows</span><span class="chip ok">every page checked at 3 widths</span></div></div>
+  <div class="logo hid" data-s="1" data-d="1.2" style="position:absolute;left:96px;bottom:96px"><svg width="72" height="72" viewBox="0 0 26 26"><path d="M13 2C13 2 5 11 5 16a8 8 0 0 0 16 0c0-5-8-14-8-14Z" fill="#A3132A"/><path d="M9 17h8M13 13v8" stroke="#F3F0E8" stroke-width="2"/></svg><span style="font-size:56px;font-weight:600;letter-spacing:-.03em">HemoGrid</span></div>
+</section>
+
+</div>
+<script>
+const TL = /*__TIMELINE__*/;
+const NUMS = /*__NUMS__*/;
+const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const ease = x => 1 - Math.pow(1 - x, 3);
+const mix = (a, b, p) => a + (b - a) * p;
+const sentences = t => t.match(/[^.!?]+[.!?]+/g) || [t];
+
+// absolute start time of every sentence of every scene (proportional to characters spoken)
+const S = {};
+for (const sc of TL.scenes) {
+  const ss = sentences(sc.text), total = ss.join('').length; let cum = 0; S[sc.id] = [];
+  for (const s of ss) { S[sc.id].push(sc.narr_start + sc.narr_dur * cum / total); cum += s.length; }
+  S[sc.id].push(sc.narr_start + sc.narr_dur);          // sentinel = end of narration
+}
+const el = id => document.getElementById('s-' + id);
+const fmt = v => v >= 10 ? Math.round(v) + ' ms' : v >= 1 ? v.toFixed(1) + ' ms' : v.toFixed(2) + ' ms';
+const N = NUMS, mx = {Q1: N.Q1a, Q2: N.Q2a, Q3: N.Q3a};
+const W = { Q1w: Math.max(N.Q1b / N.Q1a, 0.006), Q2bw: Math.max(N.Q2b / N.Q2a, 0.006), Q2cw: Math.max(N.Q2c / N.Q2a, 0.006), Q3bw: N.Q3b / N.Q3a, Q3cw: N.Q3c / N.Q3a };
+document.querySelectorAll('[data-n]').forEach(e => e.textContent = fmt(N[e.dataset.n]));
+document.getElementById('q1x').textContent = Math.round(N.Q1a / N.Q1b) + '× faster';
+
+// typed code blocks are not used; text is revealed by opacity only (keeps layout stable)
+
+// ---- ER scene: zoom to groups and dim the rest
+const erSvg = document.querySelector('#erwrap svg');
+const FULL = erSvg.getAttribute('viewBox').split(' ').map(Number);
+const entGroup = n => [...erSvg.querySelectorAll('g[id^="entity-"]')].find(g => g.id.startsWith('entity-' + n + '-'));
+const GROUPS = {
+  A: { ents: ['PERSON', 'DONOR', 'RECIPIENT', 'STAFF'], lines: [0, 1, 2] },
+  B: { ents: ['DONOR', 'DONORPHONE', 'DONORCAMP', 'CAMP'], lines: [3, 4, 5] },
+  C: { ents: ['DONATION', 'BLOODUNIT', 'ALLOCATION', 'REQUEST', 'HOSPITAL', 'RECIPIENT'], lines: [7, 10, 13, 14, 16, 17] },
+};
+const allEnts = [...erSvg.querySelectorAll('g[id^="entity-"]')];
+const lines = [...erSvg.querySelectorAll('path.relationshipLine')];
+const lbox = [...erSvg.querySelectorAll('.relationshipLabelBox')], ltxt = [...erSvg.querySelectorAll('.relationshipLabel')];
+function bbox(names) {
+  let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; const m = erSvg.getScreenCTM().inverse();
+  for (const n of names) { const r = entGroup(n).getBoundingClientRect();
+    for (const [x, y] of [[r.left, r.top], [r.right, r.bottom]]) { const p = new DOMPoint(x, y).matrixTransform(m); x0 = Math.min(x0, p.x); y0 = Math.min(y0, p.y); x1 = Math.max(x1, p.x); y1 = Math.max(y1, p.y); } }
+  const pad = 70, aspect = 1728 / 650; let w = x1 - x0 + 2 * pad, h = y1 - y0 + 2 * pad;
+  if (w / h < aspect) w = h * aspect; else h = w / aspect;
+  const cx = (x0 + x1) / 2, cy = (y0 + y1) / 2; return [cx - w / 2, cy - h / 2, w, h];
+}
+const VB = { A: bbox(GROUPS.A.ents), B: bbox(GROUPS.B.ents), C: bbox(GROUPS.C.ents), FULL, NONE: FULL };
+const ERSTATE = ['NONE', 'A', 'B', 'C'];
+function erTarget(key) {
+  const g = GROUPS[key], on = new Set(g ? g.ents : allEnts.map(e => e.id.split('-')[1])), ln = new Set(g ? g.lines : lines.map((_, i) => i));
+  const base = key === 'NONE' ? 0.9 : 0.16;
+  return { vb: VB[key], ent: allEnts.map(e => on.has(e.id.split('-')[1]) ? 1 : base), hl: allEnts.map(e => g && on.has(e.id.split('-')[1])), ln: lines.map((_, i) => ln.has(i) ? 1 : base) };
+}
+const ERT = Object.fromEntries(['NONE', 'A', 'B', 'C', 'FULL'].map(k => [k, erTarget(k)]));
+function renderER(t, sc) {
+  const ss = S.er, end = ss[ss.length - 1];
+  let k = 0; for (let i = 0; i < ss.length - 1; i++) if (t >= ss[i]) k = i;
+  const cur = t >= end + 0.4 ? 'FULL' : ERSTATE[Math.min(k, 3)];
+  const prev = t >= end + 0.4 ? ERSTATE[3] : ERSTATE[Math.max(k - 1, 0)];
+  const t0 = t >= end + 0.4 ? end + 0.4 : ss[k], p = ease(clamp((t - t0) / 0.9));
+  const a = ERT[prev], b = ERT[cur];
+  erSvg.setAttribute('viewBox', [0, 1, 2, 3].map(i => mix(a.vb[i], b.vb[i], p)).join(' '));
+  allEnts.forEach((e, i) => { e.style.opacity = mix(a.ent[i], b.ent[i], p); e.classList.toggle('hl', p > 0.5 ? b.hl[i] : a.hl[i]); });
+  lines.forEach((l, i) => { const o = mix(a.ln[i], b.ln[i], p); l.style.opacity = o; if (lbox[i]) lbox[i].style.opacity = o; if (ltxt[i]) ltxt[i].style.opacity = o; });
+}
+
+function renderEls(sc, t) {
+  const root = el(sc.id), ss = S[sc.id];
+  root.querySelectorAll('[data-s]').forEach(e => {
+    const at = ss[Math.min(+e.dataset.s, ss.length - 1)] + (+e.dataset.d || 0);
+    let p = ease(clamp((t - at) / 0.5));
+    if (e.dataset.e) p *= 1 - ease(clamp((t - (ss[+e.dataset.e] - 0.2)) / 0.3));
+    e.style.opacity = p; e.style.transform = `translateY(${(1 - p) * (+e.dataset.y || 14)}px)`;
+    if (e.dataset.e && p === 0 && t > at) e.style.visibility = 'hidden'; else e.style.visibility = '';
+  });
+  root.querySelectorAll('[data-grow]').forEach(e => {
+    const par = e.closest('[data-s]'), at = ss[+par.dataset.s] + 0.5, w = isNaN(+e.dataset.w) ? W[e.dataset.w] : +e.dataset.w;
+    e.style.width = (w * 100 * ease(clamp((t - at) / 0.9))) + '%';
+  });
+}
+
+window.__render = function (t) {
+  for (const sc of TL.scenes) {
+    const r = el(sc.id), lt = t - sc.start, fin = sc.id === 'title' ? 1 : ease(clamp(lt / 0.35)), fout = 1 - ease(clamp((lt - (sc.dur - 0.35)) / 0.35));
+    const o = lt < 0 || lt > sc.dur ? 0 : Math.min(fin, fout); r.style.opacity = o; r.style.visibility = o === 0 ? 'hidden' : '';
+    if (o > 0) { renderEls(sc, t); if (sc.id === 'er') renderER(t, sc); }
+  }
+};
+document.fonts.ready.then(() => { window.__ready = true; });
+</script></body></html>

@@ -189,3 +189,8 @@ pre.doc { margin: 0; }
 
 .prose pre.mermaid.zoomed { overflow: auto; text-align: left; max-height: 80vh; }
 .prose pre.mermaid.zoomed svg { max-width: none !important; width: 1700px; }
+
+.explainer { margin-bottom: var(--s6); max-width: 1100px; }
+.explainer h2 { margin-bottom: var(--s3); }
+.explainer video { display: block; width: 100%; aspect-ratio: 16 / 9; background: var(--ink); border: 2px solid var(--ink); border-radius: var(--r); }
+.explainer p { margin: var(--s2) 0 0; }

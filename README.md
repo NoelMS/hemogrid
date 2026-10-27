@@ -24,6 +24,7 @@ Fresh machine: `python -m venv .venv && .venv\Scripts\pip install -r requirement
 | Triggers and routines (`allocate_units`, `record_screening`, `issue_request`, ...) | `db/02_logic.sql` |
 | Views and roles with GRANTs | `db/03_views_roles.sql` |
 | Eight reference queries with their relational-algebra form | **Query lab** page, `app/queries.py` |
+| Narrated walkthrough video (3 min 35 s, captions) | top of the **Design** page; rebuild with `video/narration.py` then `video/build.py` (see below) |
 | ER diagram, normalization, algebra, indexing, transactions, NoSQL | **Design** page in the app (sources in `docs/`) |
 | MongoDB screening reports | `docs/nosql.md`, Screening and Query lab pages |
 | Walk-through of the database in psql | `scripts/live_demo.sql` |
@@ -38,6 +39,18 @@ Fresh machine: `python -m venv .venv && .venv\Scripts\pip install -r requirement
 | `python tests\ui_audit.py` | every page (incl. Design) at 1280, 1024 and 390 px: console errors, overflow, scrollbars, tap targets, contrast, hover, focus |
 | `python scripts\demo_transactions.py` | concurrency demo on a scratch clone; output in `docs\transactions_demo.txt` |
 | `python scripts\demo_indexing.py` | index comparison on 400k rows; output in `docs\indexing_demo.txt` |
+
+## Rebuilding the walkthrough video
+
+The video is rendered headlessly from the app's own data, so it stays truthful: the ER diagram is the live Mermaid output, the SQL errors are real `psql` output, and the indexing numbers are read from `docs/indexing_demo.txt`.
+
+```powershell
+.venv\Scripts\python video\narration.py        # narration (offline Windows voice) + timeline
+.venv\Scripts\python video\build.py scene      # needs the app running; embeds the live ER diagram
+.venv\Scripts\python video\build.py frames     # 30 fps frames via headless Edge
+.venv\Scripts\python video\build.py audio      # narration + soft music bed
+.venv\Scripts\python video\build.py mux        # writes app/static/explainer.mp4, .jpg and .vtt (needs ffmpeg)
+```
 
 ## Design decisions worth knowing
 
