@@ -20,7 +20,7 @@ POLICY = {"PRBC": 6, "PLASMA": 4, "PLT": 3}
 HOSPITALS = [("Kovai Medical Centre", "Coimbatore", "TN-CBE-0114"), ("PSG Institute Hospital", "Coimbatore", "TN-CBE-0231"),
              ("Government General Hospital", "Coimbatore", "TN-CBE-0007"), ("Sri Ramakrishna Hospital", "Coimbatore", "TN-CBE-0302"),
              ("Tiruppur District Hospital", "Tiruppur", "TN-TUP-0045"), ("Erode Trauma Centre", "Erode", "TN-ERD-0118")]
-CAMPS = [("Karunya Campus Drive", "Karunya Auditorium"), ("Textile Mills Association Camp", "Avinashi Road"),
+CAMPS = [("University Campus Drive", "Main Auditorium"), ("Textile Mills Association Camp", "Avinashi Road"),
          ("Rotary Mega Camp", "Race Course"), ("Police Welfare Camp", "Police Grounds"), ("IT Park Drive", "Saravanampatti"),
          ("Church Youth Camp", "RS Puram"), ("Lions Club Camp", "Gandhipuram"), ("College Fest Drive", "Siruvani Road")]
 

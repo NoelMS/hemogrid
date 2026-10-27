@@ -1,8 +1,10 @@
 """HemoGrid web app. Thin layer over PostgreSQL routines (db/02_logic.sql) and MongoDB screening reports."""
 import datetime as dt
 import json
+import pathlib
 import re
 
+import markdown
 import psycopg
 from flask import Flask, abort, flash, g, redirect, render_template, request, url_for
 from psycopg.rows import dict_row
@@ -20,6 +22,17 @@ COMPONENTS = {"PRBC": "Red cells", "PLASMA": "Plasma", "PLT": "Platelets", "WB":
 STATUSES = ["AVAILABLE", "RESERVED", "ISSUED", "EXPIRED", "QUARANTINE", "DISCARDED"]
 MARKERS = ["hiv", "hbsag", "hcv", "syphilis", "malaria"]
 PAGE = 40
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+# (slug, title, source file under docs/, one-line description)
+DESIGN = [
+    ("er", "ER diagram", "er-diagram.md", "Entities, relationships and the extended-ER features used."),
+    ("normalization", "Normalization", "normalization.md", "Functional dependencies, 1NF to 5NF, and why each table is shaped the way it is."),
+    ("algebra", "Relational algebra", "relational-algebra.md", "The key queries written as algebra, next to their SQL."),
+    ("sql", "SQL objects", None, "Tables, triggers, routines, views and roles, straight from the install scripts."),
+    ("indexing", "Indexing", "indexing_demo.txt", "B+ tree, partial and hash indexes measured with EXPLAIN ANALYZE."),
+    ("transactions", "Transactions", "transactions_demo.txt", "Atomicity, locking, isolation levels and a deadlock, reproduced live."),
+    ("nosql", "NoSQL", "nosql.md", "What lives in MongoDB and why."),
+]
 
 _mongo = MongoClient(MONGO_URI, serverSelectionTimeoutMS=1200)
 
@@ -304,6 +317,32 @@ def request_action(rid, action):
     except psycopg.Error as e:
         flash(db_error(e), "error")
     return redirect(request.referrer or url_for("requests_board"))
+
+
+# ------------------------------------------------------------------ design documentation
+def render_doc(name):
+    html = markdown.markdown((ROOT / "docs" / name).read_text(encoding="utf-8"), extensions=["tables", "fenced_code"])
+    return re.sub(r'<pre><code class="language-mermaid">(.*?)</code></pre>',
+                  lambda m: f'<pre class="mermaid">{m.group(1)}</pre>', html, flags=re.S)
+
+
+@app.route("/design")
+def design_index():
+    return redirect(url_for("design", topic="er"))
+
+
+@app.route("/design/<topic>")
+def design(topic):
+    item = next((d for d in DESIGN if d[0] == topic), None) or abort(404)
+    body, sql_files, raw = "", [], ""
+    if topic == "sql":
+        sql_files = [(f.name, f.read_text(encoding="utf-8")) for f in sorted((ROOT / "db").glob("0*.sql"))]
+    elif item[2].endswith(".md"):
+        body = render_doc(item[2])
+    else:
+        raw = (ROOT / "docs" / item[2]).read_text(encoding="utf-8")
+    cmd = {"indexing": r".venv\Scripts\python scripts\demo_indexing.py", "transactions": r".venv\Scripts\python scripts\demo_transactions.py"}.get(topic)
+    return render_template("design.html", topics=DESIGN, topic=topic, item=item, body=body, sql_files=sql_files, raw=raw, cmd=cmd)
 
 
 # ------------------------------------------------------------------ camps and query lab

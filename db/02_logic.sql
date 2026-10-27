@@ -1,4 +1,4 @@
--- HemoGrid business logic: functions, procedures, triggers (Module 2).
+-- HemoGrid business logic: functions, procedures, triggers.
 SET search_path = hemo;
 
 -- ---------------------------------------------------------------- compatibility

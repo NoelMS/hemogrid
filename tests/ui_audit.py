@@ -9,7 +9,8 @@ SHOTS = ROOT / "docs" / "screens"
 SHOTS.mkdir(parents=True, exist_ok=True)
 BASE = "http://127.0.0.1:5057"
 PAGES = ["/", "/inventory", "/inventory?group=O-&component=PRBC", "/donors", "/donors/new", "/donors/20", "/screening",
-         "/screening?flag=hiv", "/requests", "/camps", "/query-lab", "/unit/10"]
+         "/screening?flag=hiv", "/requests", "/camps", "/query-lab", "/unit/10",
+         "/design/er", "/design/normalization", "/design/algebra", "/design/sql", "/design/indexing", "/design/transactions", "/design/nosql"]
 WIDTHS = {"desktop": (1280, 800), "tablet": (1024, 768), "phone": (390, 844)}
 
 JS_AUDIT = """() => {

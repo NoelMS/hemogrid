@@ -1,4 +1,4 @@
-"""Module 5 demo: ACID, races for the last O- unit, isolation levels, deadlock.
+"""Concurrency demo: ACID, races for the last O- unit, isolation levels, deadlock.
 Runs on a scratch clone (hemogrid_demo) so the real data is untouched.  Output is also saved to docs/transactions_demo.txt.
 """
 import pathlib, sys, threading, io

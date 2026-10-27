@@ -1,4 +1,4 @@
-"""Module 4 demo: B+ tree vs hash vs no index, measured with EXPLAIN ANALYZE on a 400k-row scratch table.
+"""Index demo: B+ tree vs hash vs no index, measured with EXPLAIN ANALYZE on a 400k-row scratch table.
 Runs in the hemogrid_demo clone (create it first with demo_transactions.py) and saves docs/indexing_demo.txt."""
 import io, pathlib, re, sys
 import psycopg
@@ -40,7 +40,7 @@ def explain(sql, label):
     return ms
 
 
-say("== Module 4: indexing, measured on 400,000 unit rows (scratch table unit_big) ==\n")
+say("== Indexing, measured on 400,000 unit rows (scratch table unit_big) ==\n")
 say("Q1  FEFO lookup (the allocate_units query shape): group + component + AVAILABLE, soonest expiry")
 a = explain(FEFO, "no index")
 c.execute("CREATE INDEX ix_big_fefo ON unit_big (blood_group, component, expiry_date) WHERE status = 'AVAILABLE'")

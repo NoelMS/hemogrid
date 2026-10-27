@@ -163,3 +163,29 @@ input[type=checkbox], input[type=radio] { width: 18px; min-height: 18px; accent-
   .bars { grid-template-columns: 6ch 1fr 4ch; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } .btn:active { transform: none; } }
+
+/* ---- design documentation pages */
+.tabs { display: flex; flex-wrap: wrap; gap: 0 var(--s1); border-bottom: 1px solid var(--rule-strong); }
+.tabs a { padding: var(--s2) var(--s4); text-decoration: none; border-bottom: 3px solid transparent; margin-bottom: -1px; min-height: 38px; transition: background var(--t); }
+.tabs a:hover { background: var(--paper-2); color: var(--ink); }
+.tabs a[aria-current="page"] { border-bottom-color: var(--blood); font-weight: 600; }
+.tab-desc { margin: var(--s3) 0 var(--s5); }
+.prose { max-width: none; }
+.prose h1 { display: none; }
+.prose h2 { margin: var(--s6) 0 var(--s3); padding-bottom: var(--s2); border-bottom: 1px solid var(--rule-strong); }
+.prose h3 { margin: var(--s5) 0 var(--s2); font-size: 0.98rem; }
+.prose p, .prose li { max-width: 78ch; }
+.prose code { font-family: var(--mono); font-size: 0.86em; background: var(--paper-2); padding: 1px 5px; border-radius: var(--r); overflow-wrap: anywhere; }
+.prose pre { background: #FBFAF6; border: 1px solid var(--rule); padding: var(--s4); white-space: pre-wrap; overflow-wrap: anywhere; border-radius: var(--r); font: 400 0.84rem/1.55 var(--mono); }
+.prose pre code { background: none; padding: 0; }
+.prose pre.mermaid { background: var(--paper); border: 1px solid var(--rule); text-align: center; padding: var(--s4) var(--s2); }
+.prose pre.mermaid svg { max-width: 100%; height: auto; }
+.prose table { width: 100%; border-collapse: collapse; margin: var(--s3) 0; table-layout: auto; }
+.prose th { text-align: left; font-size: 0.82rem; color: var(--ink-2); padding: var(--s2) var(--s3); border-bottom: 1px solid var(--rule-strong); }
+.prose td { padding: 8px var(--s3); border-bottom: 1px solid var(--rule); vertical-align: top; overflow-wrap: anywhere; }
+.prose blockquote { margin: var(--s3) 0; padding-left: var(--s4); border-left: 3px solid var(--rule-strong); color: var(--ink-2); }
+pre.doc { margin: 0; }
+@media (max-width: 640px) { .tabs a { padding: var(--s2) var(--s3); } .prose td, .prose th { padding: 6px var(--s2); font-size: 0.88rem; } }
+
+.prose pre.mermaid.zoomed { overflow: auto; text-align: left; max-height: 80vh; }
+.prose pre.mermaid.zoomed svg { max-width: none !important; width: 1700px; }

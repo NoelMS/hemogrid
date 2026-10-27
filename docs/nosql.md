@@ -1,4 +1,4 @@
-# Module 6: NoSQL in HemoGrid
+# NoSQL in HemoGrid
 
 ## What is implemented: document store (MongoDB 7)
 

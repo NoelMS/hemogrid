@@ -1,4 +1,4 @@
--- Views and authorization (Module 2).
+-- Views and authorization.
 SET search_path = hemo;
 
 -- Live stock by group x component, with the policy threshold for the dashboard heat grid.

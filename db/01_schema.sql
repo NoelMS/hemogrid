@@ -145,7 +145,7 @@ CREATE TABLE unit_audit (
   changed_by  text NOT NULL DEFAULT current_user
 );
 
--- ---- Indexes (Module 4). Demonstrated with EXPLAIN in db/05_indexing_demo.sql
+-- ---- Indexes. Measured with EXPLAIN ANALYZE in scripts/demo_indexing.py
 -- B+ tree (PostgreSQL's default btree): allocation search is "group + component, available, soonest expiry first".
 CREATE INDEX ix_unit_fefo ON blood_unit (blood_group, component, expiry_date) WHERE status = 'AVAILABLE';
 -- Hash index: the barcode scanner only ever does equality lookups.

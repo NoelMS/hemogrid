@@ -1,7 +1,5 @@
 # HemoGrid ER diagram
 
-Renders on GitHub, in VS Code (Markdown Preview Mermaid) or at mermaid.live.
-
 ```mermaid
 erDiagram
     PERSON ||--o| DONOR : "is a"
@@ -24,70 +22,102 @@ erDiagram
     BLOOD_UNIT ||--o| ALLOCATION : "reserved in"
     BLOOD_UNIT ||--o{ UNIT_AUDIT : "history"
 
-    PERSON { int person_id PK
-             text full_name
-             char sex
-             date dob
-             text city }
-    DONOR { int person_id PK,FK
-            blood_group blood_group
-            date last_donation_date
-            date deferred_until }
-    RECIPIENT { int person_id PK,FK
-                blood_group blood_group }
-    STAFF { int person_id PK,FK
-            text role }
-    DONOR_PHONE { int donor_id PK,FK
-                  text phone PK }
-    DONOR_CAMP { int donor_id PK,FK
-                 int camp_id PK,FK }
-    CAMP { int camp_id PK
-           text name
-           text venue
-           date camp_date
-           int coordinator_id FK }
-    DONATION { int donation_id PK
-               int donor_id FK
-               int camp_id FK
-               int staff_id FK
-               date donated_on
-               int volume_ml
-               text screening }
-    COMPONENT_TYPE { component_code component PK
-                     int shelf_days
-                     text storage }
-    BLOOD_UNIT { int unit_id PK
-                 text barcode UK
-                 int donation_id FK
-                 component_code component FK
-                 blood_group blood_group
-                 date expiry_date
-                 text status }
-    HOSPITAL { int hospital_id PK
-               text name UK
-               text licence_no UK }
-    REQUEST { int request_id PK
-              int hospital_id FK
-              int patient_id FK
-              component_code component FK
-              int units_needed
-              text urgency
-              text status }
-    ALLOCATION { int allocation_id PK
-                 int request_id FK
-                 int unit_id UK,FK
-                 timestamptz issued_at }
-    STOCK_POLICY { blood_group blood_group PK
-                   component_code component PK,FK
-                   int reorder_level }
-    STOCK_ALERT { int alert_id PK
-                  blood_group blood_group
-                  component_code component
-                  int available }
-    UNIT_AUDIT { bigint audit_id PK
-                 int unit_id
-                 text old_status
-                 text new_status }
+    PERSON {
+        int person_id PK
+        text full_name
+        char sex
+        date dob
+        text city
+    }
+    DONOR {
+        int person_id PK,FK
+        blood_group blood_group
+        date last_donation_date
+        date deferred_until
+    }
+    RECIPIENT {
+        int person_id PK,FK
+        blood_group blood_group
+    }
+    STAFF {
+        int person_id PK,FK
+        text role
+    }
+    DONOR_PHONE {
+        int donor_id PK,FK
+        text phone PK
+    }
+    DONOR_CAMP {
+        int donor_id PK,FK
+        int camp_id PK,FK
+    }
+    CAMP {
+        int camp_id PK
+        text name
+        text venue
+        date camp_date
+        int coordinator_id FK
+    }
+    DONATION {
+        int donation_id PK
+        int donor_id FK
+        int camp_id FK
+        int staff_id FK
+        date donated_on
+        int volume_ml
+        text screening
+    }
+    COMPONENT_TYPE {
+        component_code component PK
+        int shelf_days
+        text storage
+    }
+    BLOOD_UNIT {
+        int unit_id PK
+        text barcode UK
+        int donation_id FK
+        component_code component FK
+        blood_group blood_group
+        date expiry_date
+        text status
+    }
+    HOSPITAL {
+        int hospital_id PK
+        text name UK
+        text licence_no UK
+    }
+    REQUEST {
+        int request_id PK
+        int hospital_id FK
+        int patient_id FK
+        component_code component FK
+        int units_needed
+        text urgency
+        text status
+    }
+    ALLOCATION {
+        int allocation_id PK
+        int request_id FK
+        int unit_id UK,FK
+        timestamptz issued_at
+    }
+    STOCK_POLICY {
+        blood_group blood_group PK
+        component_code component PK,FK
+        int reorder_level
+    }
+    STOCK_ALERT {
+        int alert_id PK
+        blood_group blood_group
+        component_code component
+        int available
+    }
+    UNIT_AUDIT {
+        bigint audit_id PK
+        int unit_id
+        text old_status
+        text new_status
+    }
 ```
 
 ## Extended-ER features used

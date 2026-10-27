@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}{{ item[1] }} · Design{% endblock %}
+{% block body %}
+<div class="page-head">
+  <div><h1>Design</h1><p>How the database is built. Everything here is read from the project's own files, so it cannot drift from the code.</p></div>
+</div>
+
+<nav class="tabs" aria-label="Design topics">
+  {% for slug, title, _f, _d in topics %}<a href="/design/{{ slug }}" {% if slug == topic %}aria-current="page"{% endif %}>{{ title }}</a>{% endfor %}
+</nav>
+<p class="muted tab-desc">{{ item[3] }}</p>
+
+{% if body %}
+  {% if topic == 'er' %}<p><button class="btn quiet sm" id="zoom" type="button" aria-pressed="false">Enlarge diagram</button> <span class="small muted">Shows the diagram at readable size; scroll inside the frame.</span></p>{% endif %}
+  <article class="prose">{{ body|safe }}</article>
+{% elif sql_files %}
+  {% for name, text in sql_files %}
+  <section class="q-block">
+    <h2 class="mono">db/{{ name }}</h2>
+    <details {% if loop.first %}open{% endif %}><summary class="small">Show source ({{ text.count('\n') }} lines)</summary><div class="doc">{{ text }}</div></details>
+  </section>
+  {% endfor %}
+{% else %}
+  <pre class="doc">{{ raw }}</pre>
+  {% if cmd %}<p class="small muted">Saved output of the last run. To reproduce it live: <code class="mono">{{ cmd }}</code></p>{% endif %}
+{% endif %}
+
+{% if topic == 'er' %}
+<script src="{{ url_for('static', filename='vendor/mermaid.min.js') }}"></script>
+<script>
+  mermaid.initialize({ startOnLoad: true, theme: 'base', securityLevel: 'strict', er: { useMaxWidth: true, fontSize: 14 },
+    themeVariables: { fontFamily: '"IBM Plex Sans", "Segoe UI", sans-serif', primaryColor: '#EAE6DA', primaryBorderColor: '#8D8672',
+      primaryTextColor: '#1A1D21', lineColor: '#4A5159', secondaryColor: '#F3F0E8', tertiaryColor: '#F3F0E8', background: '#F3F0E8' } });
+</script>
+<script>
+  document.getElementById('zoom').addEventListener('click', function () {
+    var on = this.getAttribute('aria-pressed') !== 'true';
+    document.querySelector('pre.mermaid').classList.toggle('zoomed', on);
+    this.setAttribute('aria-pressed', on);
+    this.textContent = on ? 'Fit to page' : 'Enlarge diagram';
+  });
+</script>
+{% endif %}
+{% endblock %}
