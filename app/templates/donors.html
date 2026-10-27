@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "_m.html" import grp, opts %}
+{% block title %}Donors{% endblock %}
+{% block body %}
+<div class="page-head">
+  <div><h1>Donors</h1><p>Search the register, check who may give blood today, or enrol someone new.</p></div>
+  <a class="btn" href="/donors/new">Register donor</a>
+</div>
+
+<form class="filters" method="get" action="/donors">
+  <div class="grow"><label for="q">Name</label><input id="q" name="q" value="{{ term }}" placeholder="e.g. Nair" autocomplete="off"></div>
+  <div><label for="g">Group</label><select id="g" name="group">{{ opts(GROUPS, sel, 'Any group') }}</select></div>
+  <label class="check" style="padding-bottom:9px"><input type="checkbox" name="eligible" value="1" {% if eligible %}checked{% endif %}> Eligible today</label>
+  <button class="btn">Search</button>
+</form>
+
+{% if rows %}
+<table class="tbl stack">
+  <thead><tr><th>Name</th><th>Group</th><th>City</th><th class="r">Donations</th><th>Last donation</th><th>Standing</th></tr></thead>
+  <tbody>
+  {% for d in rows %}
+    <tr>
+      <td data-l="Name"><a href="/donors/{{ d.person_id }}">{{ d.full_name }}</a></td>
+      <td data-l="Group">{{ grp(d.blood_group) }}</td>
+      <td data-l="City">{{ d.city }}</td>
+      <td data-l="Donations" class="r num">{{ d.donations }}</td>
+      <td data-l="Last donation" class="num">{{ d.last_donation_date.strftime('%d %b %Y') if d.last_donation_date else 'never' }}</td>
+      <td data-l="Standing">
+        {% if d.deferred_until and d.deferred_until > today %}<span class="tag FAIL">deferred to {{ d.deferred_until.strftime('%d %b %Y') }}</span>
+        {% elif d.due and d.due > today %}<span class="tag PENDING">due {{ d.due.strftime('%d %b') }}</span>
+        {% else %}<span class="tag PASS">eligible</span>
+        {% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if rows|length == 60 %}<p class="small muted">Showing the first 60 matches. Narrow the search to see others.</p>{% endif %}
+{% else %}<p class="empty">No donors match. {% if term %}Check the spelling or <a href="/donors">clear the filters</a>.{% endif %}</p>{% endif %}
+{% endblock %}

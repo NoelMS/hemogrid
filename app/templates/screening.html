@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Screening{% endblock %}
+{% block body %}
+<div class="page-head">
+  <div><h1>Screening</h1>
+  <p>Units stay out of stock until a lab result is entered. Haemoglobin below 12.5 g/dL or any reactive marker fails the donation, defers the donor for a year and creates no units.</p></div>
+</div>
+
+<section aria-labelledby="pend-h">
+  <header><h2 id="pend-h">Awaiting result</h2><span class="num small muted">{{ pending|length }}</span></header>
+  {% if pending %}
+  <table class="tbl stack">
+    <thead><tr><th>Donation</th><th>Donor</th><th>Result entry</th></tr></thead>
+    <tbody>
+    {% for p in pending %}
+      <tr>
+        <td data-l="Donation"><span class="num">#{{ p.donation_id }}</span> <span class="muted small">{{ p.donated_on.strftime('%d %b') }} · {{ p.volume_ml }} ml</span></td>
+        <td data-l="Donor"><a href="/donors/{{ p.person_id }}">{{ p.full_name }}</a> <span class="bg {% if p.blood_group.endswith('-') %}neg{% endif %}">{{ p.blood_group }}</span></td>
+        <td>
+          <form method="post" action="/screening/{{ p.donation_id }}" class="filters" style="margin:0">
+            <div style="min-width:88px;max-width:110px"><label for="hb{{ p.donation_id }}">Hb g/dL</label><input id="hb{{ p.donation_id }}" name="hb" class="mono" inputmode="decimal" value="13.5" required></div>
+            <div><label for="rx{{ p.donation_id }}">Reactive marker</label>
+              <select id="rx{{ p.donation_id }}" name="reactive"><option value="">None</option>{% for m in markers %}<option>{{ m }}</option>{% endfor %}</select></div>
+            <label class="check" style="padding-bottom:9px"><input type="checkbox" name="split" value="1" checked> Separate components</label>
+            <button class="btn sm" style="margin-bottom:3px">Save result</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="empty">Nothing is waiting. New donations appear here until the lab enters a result.</p>{% endif %}
+</section>
+
+<section class="section" aria-labelledby="doc-h">
+  <header><h2 id="doc-h">Report store</h2><span class="small muted">MongoDB · {{ total }} documents · schema-free: questionnaires differ per donor</span></header>
+  {% if not nosql_ok %}
+    <p class="msg error">MongoDB is not reachable. Screening results are still written to PostgreSQL.</p>
+  {% else %}
+  <div class="split">
+    <div>
+      <h3 class="small muted" style="margin-bottom:var(--s2)">Flags raised (aggregation)</h3>
+      {% if stats %}
+      <div class="bars">
+        {% for s in stats %}
+          <a href="/screening?flag={{ s._id }}">{{ s._id }}</a><i style="width: {{ (s.n * 100 / stats[0].n)|int }}%"></i><span class="r">{{ s.n }}</span>
+        {% endfor %}
+      </div>
+      <p class="small muted">Select a flag to list its reports.</p>
+      {% else %}<p class="muted">No flagged reports.</p>{% endif %}
+    </div>
+    <div>
+      {% if flag %}
+      <h3 class="small muted" style="margin-bottom:var(--s2)">Reports flagged “{{ flag }}”</h3>
+      {% if found %}
+      <table class="tbl"><thead><tr><th>Donation</th><th class="r">Hb</th><th>Reactive</th></tr></thead><tbody>
+        {% for r in found %}<tr><td class="num">#{{ r.donation_id }}</td><td class="r num">{{ r.hb_gdl }}</td>
+          <td>{% for k, v in r.markers.items() if v != 'NEGATIVE' %}{{ k }}{% else %}<span class="muted">none</span>{% endfor %}</td></tr>{% endfor %}
+      </tbody></table>
+      {% else %}<p class="empty">No reports carry that flag.</p>{% endif %}
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

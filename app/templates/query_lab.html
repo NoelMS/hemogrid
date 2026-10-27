@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Query lab{% endblock %}
+{% block body %}
+<div class="page-head"><div><h1>Query lab</h1>
+  <p>The SQL behind the reports, with its relational-algebra form, executed live against the current data. Below it, the same idea in MongoDB's aggregation pipeline.</p></div></div>
+
+{% for r in results %}
+<section class="q-block" aria-labelledby="q{{ loop.index }}">
+  <h2 id="q{{ loop.index }}"><span class="num muted">{{ '%02d'|format(loop.index) }}</span> {{ r.title }}</h2>
+  <div class="why"><span>{{ r.topic }}</span><span class="mono">{{ r.algebra }}</span></div>
+  <details>
+    <summary class="small">Show SQL</summary>
+    <div class="doc">{{ r.sql }}</div>
+  </details>
+  {% if r.error %}<p class="msg error">{{ r.error }}</p>
+  {% elif r.rows %}
+  <table class="tbl stack" style="margin-top:var(--s3)">
+    <thead><tr>{% for c in r.cols %}<th>{{ c }}</th>{% endfor %}</tr></thead>
+    <tbody>{% for row in r.rows %}<tr>{% for c in r.cols %}<td data-l="{{ c }}" class="{{ 'num' if row[c] is number else '' }}">{{ row[c] if row[c] is not none else '—' }}</td>{% endfor %}</tr>{% endfor %}</tbody>
+  </table>
+  {% else %}<p class="empty" style="margin-top:var(--s3)">The query returns no rows on the current data.</p>{% endif %}
+</section>
+{% endfor %}
+
+<div class="page-head" style="margin-top:var(--s7)"><div><h1>MongoDB aggregations</h1><p>Screening reports live in a document store because their questionnaires vary per donor.</p></div></div>
+{% for m in mongo %}
+<section class="q-block">
+  <h2>{{ m.title }}</h2>
+  <div class="why"><span>{{ m.note }}</span></div>
+  <details><summary class="small">Show pipeline</summary><div class="doc">{{ m.text }}</div></details>
+  {% if m.rows %}<table class="tbl stack" style="margin-top:var(--s3)"><thead><tr>{% for k in m.rows[0].keys() %}<th>{{ k }}</th>{% endfor %}</tr></thead>
+  <tbody>{% for row in m.rows %}<tr>{% for k, v in row.items() %}<td data-l="{{ k }}" class="{{ 'num' if v is number else '' }}">{{ v }}</td>{% endfor %}</tr>{% endfor %}</tbody></table>{% else %}<p class="empty">No documents.</p>{% endif %}
+</section>
+{% else %}<p class="msg error">MongoDB is not reachable.</p>{% endfor %}
+{% endblock %}

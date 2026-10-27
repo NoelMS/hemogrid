@@ -1,0 +1,33 @@
+== Setup: exactly ONE O- red-cell unit is in stock; two EMERGENCY requests want it simultaneously ==
+   unit 879, requests [41, 42]
+
+1. Atomicity - a failure halfway rolls everything back
+   after ROLLBACK: request 41 -> OPEN (0 unit); request 42 -> OPEN (0 unit)  (unit is AVAILABLE again: AVAILABLE)
+
+2. Naive read-then-write at READ COMMITTED (no lock)
+   request 41 got unit 879
+   UniqueViolation: duplicate key value violates unique constraint "allocation_unit_id_key"
+   -> request 41 -> OPEN (1 unit); request 42 -> OPEN (0 unit)
+   Both transactions read the unit as free. Only the UNIQUE(allocation.unit_id) constraint stopped a double allocation;
+   the loser's work was thrown away with an error instead of being handled.
+
+3. allocate_units(): SELECT ... FOR UPDATE SKIP LOCKED (READ COMMITTED)
+   request 41 got 0 unit(s)
+   request 42 got 1 unit(s)
+   -> request 41 -> OPEN (0 unit); request 42 -> FULFILLED (1 unit)
+   One request wins the row lock; the other skips it, sees no stock and stays OPEN - clean, no error.
+
+4. SERIALIZABLE isolation with retry loop
+    request 41: SQLSTATE 40001 serialization_failure on attempt 1, retrying
+   request 41: no unit left (attempt 2)
+   request 42 got unit 879 (attempt 1)
+   -> request 41 -> OPEN (0 unit); request 42 -> OPEN (1 unit)
+   The database detects the read/write dependency cycle and aborts one transaction; the application retries it.
+
+5. Deadlock: two sessions lock the same two units in opposite order
+   DeadlockDetected: deadlock detected
+   locked 5 then 2: committed
+   PostgreSQL's deadlock detector aborts one victim (SQLSTATE 40P01). Fix: always lock rows in a fixed order (ORDER BY unit_id).
+
+6. Durability: a commit is a WAL flush
+   WAL position 0/F201CB8 -> 0/F201D60 after one committed UPDATE (synchronous_commit=on)

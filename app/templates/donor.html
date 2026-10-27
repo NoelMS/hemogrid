@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "_m.html" import grp %}
+{% block title %}{{ d.full_name }}{% endblock %}
+{% block body %}
+<div class="page-head">
+  <div><p class="small"><a href="/donors">← Donors</a></p><h1>{{ d.full_name }}</h1></div>
+  {% if d.deferred_until and d.deferred_until > today %}<span class="tag FAIL">deferred until {{ d.deferred_until.strftime('%d %b %Y') }}</span>
+  {% elif d.eligible_from and d.eligible_from > today %}<span class="tag PENDING">next eligible {{ d.eligible_from.strftime('%d %b %Y') }}</span>
+  {% else %}<span class="tag PASS">eligible today</span>{% endif %}
+</div>
+
+<dl class="facts">
+  <div><dt>Blood group</dt><dd>{{ grp(d.blood_group) }}</dd></div>
+  <div><dt>Born</dt><dd class="num">{{ d.dob.strftime('%d %b %Y') }} · {{ d.sex }}</dd></div>
+  <div><dt>City</dt><dd>{{ d.city }}</dd></div>
+  <div><dt>Phones</dt><dd class="mono">{% for p in phones %}{{ p }}{% if not loop.last %}<br>{% endif %}{% else %}<span class="muted">none on file</span>{% endfor %}</dd></div>
+  <div><dt>Camps attended</dt><dd>{% for c in camps %}{{ c.name }}{% if not loop.last %}<br>{% endif %}{% else %}<span class="muted">walk-in only</span>{% endfor %}</dd></div>
+</dl>
+
+<div class="split section">
+  <section aria-labelledby="hist-h">
+    <header><h2 id="hist-h">Donation history</h2><span class="num small muted">{{ history|length }}</span></header>
+    {% if history %}
+    <table class="tbl stack">
+      <thead><tr><th>Date</th><th>Where</th><th class="r">Volume</th><th>Screening</th><th class="r">Units</th></tr></thead>
+      <tbody>{% for h in history %}
+        <tr><td data-l="Date" class="num">{{ h.donated_on.strftime('%d %b %Y') }}</td><td data-l="Where">{{ h.camp or 'Centre (walk-in)' }}</td>
+            <td data-l="Volume" class="r num">{{ h.volume_ml }} ml</td><td data-l="Screening"><span class="tag {{ h.screening }}">{{ h.screening }}</span></td>
+            <td data-l="Units" class="r num">{{ h.units }}</td></tr>
+      {% endfor %}</tbody>
+    </table>
+    {% else %}<p class="empty">No donations yet.</p>{% endif %}
+  </section>
+
+  <section aria-labelledby="don-h">
+    <header><h2 id="don-h">Record a donation</h2></header>
+    <form method="post" action="/donors/{{ d.person_id }}/donate" class="form-grid" style="grid-template-columns:1fr">
+      <div><label for="st">Phlebotomist</label><select id="st" name="staff" required>{% for s in staff %}<option value="{{ s.person_id }}">{{ s.full_name }}</option>{% endfor %}</select></div>
+      <div><label for="cp">Collected at</label><select id="cp" name="camp"><option value="">Centre (walk-in)</option>{% for c in open_camps %}<option value="{{ c.camp_id }}">{{ c.name }} · {{ c.camp_date.strftime('%d %b') }}</option>{% endfor %}</select></div>
+      <div><label for="vol">Volume</label><select id="vol" name="volume"><option value="350">350 ml</option><option value="450" selected>450 ml</option></select></div>
+      <div><button class="btn">Record donation</button></div>
+      <p class="small muted" style="margin:0">The database enforces age 18–65, no active deferral and a 90-day (men) / 120-day (women) gap. If it refuses, the reason is shown above.</p>
+    </form>
+  </section>
+</div>
+{% endblock %}

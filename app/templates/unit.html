@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% from "_m.html" import grp %}
+{% block title %}{{ u.barcode }}{% endblock %}
+{% block body %}
+<div class="page-head">
+  <div>
+    <p class="small"><a href="/inventory">← Inventory</a></p>
+    <h1 class="mono">{{ u.barcode }}</h1>
+  </div>
+  <span class="tag {{ u.status }}" style="font-size:.95rem;padding:3px 12px">{{ u.status }}</span>
+</div>
+
+<dl class="facts">
+  <div><dt>Blood group</dt><dd>{{ grp(u.blood_group) }}</dd></div>
+  <div><dt>Component</dt><dd>{{ u.label }}</dd></div>
+  <div><dt>Storage</dt><dd class="mono">{{ u.storage }}</dd></div>
+  <div><dt>Collected</dt><dd class="num">{{ u.collected_on.strftime('%d %b %Y') }}</dd></div>
+  <div><dt>Expires</dt><dd class="num">{{ u.expiry_date.strftime('%d %b %Y') }} <span class="muted small">({{ u.expiry_date|rel }}, {{ u.shelf_days }}d shelf life)</span></dd></div>
+  <div><dt>Donor</dt><dd><a href="/donors/{{ u.donor_id }}">{{ u.donor }}</a> <span class="muted small">donation #{{ u.donation_id }}</span></dd></div>
+</dl>
+
+<div class="split section">
+  <section aria-labelledby="au-h">
+    <header><h2 id="au-h">Status history</h2><span class="small muted">written by a trigger, never by the app</span></header>
+    <ol class="timeline">
+      {% for a in audit %}
+      <li><span class="tag {{ a.new_status }}">{{ a.new_status }}</span>
+        <span class="muted small">{% if a.old_status %}from {{ a.old_status }} · {% endif %}{{ a.changed_at|ts }} · by {{ a.changed_by }}</span></li>
+      {% endfor %}
+    </ol>
+    <h2 style="margin-top:var(--s5)">Allocation</h2>
+    {% if alloc %}
+      <p>Reserved for <a href="/requests">request #{{ alloc.request_id }}</a> from {{ alloc.hospital }} on {{ alloc.allocated_at|ts }}{% if alloc.issued_at %}; issued {{ alloc.issued_at|ts }}{% endif %}.</p>
+    {% else %}<p class="muted">Not allocated to any request.</p>{% endif %}
+  </section>
+
+  <section aria-labelledby="rep-h">
+    <header><h2 id="rep-h">Screening report</h2><span class="small muted">MongoDB document</span></header>
+    {% if report == 'unavailable' %}
+      <p class="msg error">The MongoDB report store is unreachable. The unit data above is unaffected.</p>
+    {% elif report %}
+      <div class="doc">{{ report|tojson(indent=1) }}</div>
+    {% else %}<p class="empty">No report document is stored for this donation.</p>{% endif %}
+  </section>
+</div>
+{% endblock %}

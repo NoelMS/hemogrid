@@ -1,0 +1,2 @@
+{% macro grp(g) %}<span class="bg {% if g.endswith('-') %}neg{% endif %}">{{ g }}</span>{% endmacro %}
+{% macro opts(items, selected, any_label=None) %}{% if any_label %}<option value="">{{ any_label }}</option>{% endif %}{% for i in items %}<option value="{{ i }}" {% if i == selected %}selected{% endif %}>{{ i }}</option>{% endfor %}{% endmacro %}

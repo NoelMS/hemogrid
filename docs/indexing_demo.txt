@@ -1,0 +1,23 @@
+== Module 4: indexing, measured on 400,000 unit rows (scratch table unit_big) ==
+
+Q1  FEFO lookup (the allocate_units query shape): group + component + AVAILABLE, soonest expiry
+   no index                            104.021 ms   Parallel Seq Scan on unit_big (actual rows=1111 loops=3)
+   B+ tree (partial, composite)          0.107 ms   Index Scan using ix_big_fefo on unit_big (actual rows=5 loops=1)
+   -> 972x faster. The index is ordered on expiry inside each (group, component), so LIMIT 5 reads 5 entries, no sort.
+
+Q2  Barcode scan: equality lookup on one unit
+   no index                             86.913 ms   Parallel Seq Scan on unit_big (actual rows=0 loops=3)
+   B+ tree                               0.180 ms   Index Scan using ix_big_bc_btree on unit_big (actual rows=1 loops=1)
+   hash                                  0.041 ms   Index Scan using ix_big_bc_hash on unit_big (actual rows=1 loops=1)
+   -> both beat a full scan by ~483x; hash is O(1) but supports equality only.
+
+Q3  Range query: units expiring in the next 7 days
+   no index                             94.364 ms   Parallel Seq Scan on unit_big (actual rows=2667 loops=3)
+   hash on expiry_date                  88.892 ms   Parallel Seq Scan on unit_big (actual rows=2667 loops=3)
+   B+ tree on expiry_date                6.490 ms   Bitmap Index Scan on ix_big_exp (actual rows=8000 loops=1)
+   -> a hash index cannot serve BETWEEN (the planner ignores it); ordered leaves chain left-to-right, so ranges are cheap.
+
+Index sizes
+   ix_big_exp       2880 kB
+   ix_big_fefo      592 kB
+   table unit_big    28 MB

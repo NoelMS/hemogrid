@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Camps{% endblock %}
+{% block body %}
+<div class="page-head"><div><h1>Donation camps</h1><p>Which drives actually put blood on the shelf. Failed screenings are shown so a high-volume camp with a high loss rate is visible.</p></div></div>
+{% if rows %}
+<table class="tbl stack">
+  <thead><tr><th>Camp</th><th>Date</th><th>Coordinator</th><th class="r">Registered</th><th class="r">Donations</th><th class="r">Failed</th><th class="r">Units made</th></tr></thead>
+  <tbody>
+  {% for c in rows %}
+    <tr>
+      <td data-l="Camp">{{ c.name }}<br><span class="muted small">{{ c.venue }}</span></td>
+      <td data-l="Date" class="num">{{ c.camp_date.strftime('%d %b %Y') }}</td>
+      <td data-l="Coordinator">{{ c.coordinator }}</td>
+      <td data-l="Registered" class="r num">{{ c.registered }}</td>
+      <td data-l="Donations" class="r num">{{ c.donations }}</td>
+      <td data-l="Failed" class="r num">{{ c.failed }}</td>
+      <td data-l="Units made" class="r num"><strong>{{ c.units }}</strong></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<p class="empty">No camps recorded.</p>{% endif %}
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% from "_m.html" import grp %}
+{% block title %}Requests{% endblock %}
+{% block body %}
+<div class="page-head">
+  <div><h1>Hospital requests</h1><p>Emergency requests reserve stock the moment they are raised. Allocation prefers the patient's own group, then the soonest expiry, and keeps universal O− back.</p></div>
+</div>
+
+<form class="filters" method="get" action="/requests" aria-label="Filter requests">
+  <div><label for="st">Show</label><select id="st" name="status" onchange="this.form.submit()">
+    {% for k, v in [('ACTIVE','Open and fulfilled'),('ISSUED','Issued'),('CANCELLED','Cancelled'),('ALL','Everything')] %}<option value="{{ k }}" {% if k == status %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+  <noscript><button class="btn">Apply</button></noscript>
+</form>
+
+{% if rows %}
+<table class="tbl stack">
+  <thead><tr><th>#</th><th>Urgency</th><th>Hospital · patient</th><th>Need</th><th>Status</th><th>Reserved units</th><th></th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr>
+      <td data-l="Request" class="num">{{ r.request_id }}</td>
+      <td data-l="Urgency"><span class="tag {{ r.urgency }}">{{ r.urgency }}</span></td>
+      <td data-l="Hospital">{{ r.hospital }}<br><span class="muted small">{{ r.patient }} · {{ grp(r.patient_group) }} · {{ r.created_at|ts }}</span></td>
+      <td data-l="Need" class="num">{{ r.units_needed }} × {{ COMPONENTS[r.component] }}</td>
+      <td data-l="Status"><span class="tag {{ r.status }}">{{ r.status }}</span> <span class="num small muted">{{ r.allocated }}/{{ r.units_needed }}</span></td>
+      <td data-l="Units" class="small"><div>{% for u in units.get(r.request_id, []) %}<a class="mono" href="/unit/{{ u.unit_id }}">{{ u.barcode }}</a> {{ grp(u.blood_group) }}{% if not loop.last %}<br>{% endif %}{% else %}<span class="muted">none yet</span>{% endfor %}</div></td>
+      <td class="act">
+        {% if r.status in ('OPEN','PARTIAL') %}<form method="post" action="/requests/{{ r.request_id }}/allocate"><button class="btn sm">Allocate</button></form>{% endif %}
+        {% if r.status == 'FULFILLED' %}<form method="post" action="/requests/{{ r.request_id }}/issue"><button class="btn sm">Issue to hospital</button></form>{% endif %}
+        {% if r.status in ('OPEN','PARTIAL','FULFILLED') %}<form method="post" action="/requests/{{ r.request_id }}/cancel"><button class="btn sm danger" onclick="return confirm('Cancel request #{{ r.request_id }}? Reserved units return to stock.')">Cancel</button></form>{% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<p class="empty">No requests in this view.</p>{% endif %}
+
+<section class="section" aria-labelledby="new-h">
+  <header><h2 id="new-h">Raise a request</h2></header>
+  <form method="post" action="/requests/new" class="form-grid">
+    <div><label for="h">Hospital</label><select id="h" name="hospital" required>{% for h in hospitals %}<option value="{{ h.hospital_id }}">{{ h.name }}</option>{% endfor %}</select></div>
+    <div><label for="p">Patient</label><select id="p" name="patient" required>{% for p in patients %}<option value="{{ p.person_id }}">{{ p.full_name }} ({{ p.blood_group }})</option>{% endfor %}</select></div>
+    <div><label for="c">Component</label><select id="c" name="component">{% for k in ['PRBC','PLASMA','PLT'] %}<option value="{{ k }}">{{ COMPONENTS[k] }}</option>{% endfor %}</select></div>
+    <div><label for="u">Units</label><input id="u" type="number" name="units" min="1" max="20" value="1" class="mono" required></div>
+    <div><label for="g">Urgency</label><select id="g" name="urgency"><option>ROUTINE</option><option>URGENT</option><option>EMERGENCY</option></select></div>
+    <div><button class="btn">Raise request</button></div>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% from "_m.html" import grp, opts %}
+{% block title %}Inventory{% endblock %}
+{% block body %}
+<div class="page-head">
+  <div><h1>Inventory</h1><p>Every labelled unit, ordered by expiry so the oldest stock is always on top.</p></div>
+  <form class="filters" action="/unit" method="get" style="margin:0">
+    <div><label for="bc">Scan or type a barcode</label><input id="bc" name="barcode" class="mono" placeholder="HG261012-0000421" autocomplete="off" required></div>
+    <button class="btn">Find unit</button>
+  </form>
+</div>
+
+<form class="filters" method="get" action="/inventory">
+  <div><label for="fg">Group</label><select id="fg" name="group">{{ opts(GROUPS, f.group, 'Any group') }}</select></div>
+  <div><label for="fc">Component</label><select id="fc" name="component"><option value="">Any component</option>
+    {% for k, v in COMPONENTS.items() %}<option value="{{ k }}" {% if k == f.component %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></div>
+  <div><label for="fs">Status</label><select id="fs" name="status">{{ opts(statuses, f.status, None) }}<option value="ANY" {% if f.status == 'ANY' %}selected{% endif %}>Any status</option></select></div>
+  <button class="btn">Apply</button>
+  <a class="btn quiet" href="/inventory">Reset</a>
+  <span class="muted small num" style="margin-left:auto">{{ total }} unit{{ '' if total == 1 else 's' }}</span>
+</form>
+
+{% if rows %}
+<table class="tbl stack">
+  <thead><tr><th>Barcode</th><th>Group</th><th>Component</th><th>Status</th><th>Collected</th><th class="r">Expires</th></tr></thead>
+  <tbody>
+  {% for u in rows %}
+    <tr>
+      <td data-l="Barcode"><a class="mono" href="/unit/{{ u.unit_id }}">{{ u.barcode }}</a></td>
+      <td data-l="Group">{{ grp(u.blood_group) }}</td>
+      <td data-l="Component">{{ COMPONENTS[u.component] }}</td>
+      <td data-l="Status"><span class="tag {{ u.status }}">{{ u.status }}</span></td>
+      <td data-l="Collected" class="num">{{ u.collected_on.strftime('%d %b %Y') }}</td>
+      <td data-l="Expires" class="r num">{{ u.expiry_date.strftime('%d %b %Y') }} <span class="muted small">({{ u.expiry_date|rel }})</span></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<div class="pager">
+  {% set qs = 'group=' ~ (f.group|urlencode) ~ '&component=' ~ f.component ~ '&status=' ~ f.status %}
+  {% if page > 1 %}<a class="btn quiet sm" href="/inventory?{{ qs }}&page={{ page - 1 }}">Previous</a>{% else %}<button class="btn sm" disabled>Previous</button>{% endif %}
+  <span class="num small muted">page {{ page }} of {{ pages }}</span>
+  {% if page < pages %}<a class="btn quiet sm" href="/inventory?{{ qs }}&page={{ page + 1 }}">Next</a>{% else %}<button class="btn sm" disabled>Next</button>{% endif %}
+</div>
+{% else %}
+<p class="empty">No units match these filters. Try “Any status”, or <a href="/screening">release units by screening a donation</a>.</p>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Stock{% endblock %}
+{% block body %}
+<div class="page-head">
+  <div>
+    <h1>Stock on hand</h1>
+    <p>Available units by blood group and component. A cell turns amber below its reorder level and red when empty.</p>
+  </div>
+  <form method="post" action="/sweep"><button class="btn quiet" title="Mark unreserved units past expiry as EXPIRED">Run expiry sweep</button></form>
+</div>
+
+<div class="ledger" aria-label="Unit totals">
+  <div><span class="n">{{ totals.available }}</span><span class="l">available</span></div>
+  <div><span class="n">{{ totals.reserved }}</span><span class="l">reserved for requests</span></div>
+  <div><span class="n">{{ totals.issued }}</span><span class="l">issued to hospitals</span></div>
+  <div><span class="n">{{ totals.expired }}</span><span class="l">expired (written off)</span></div>
+</div>
+
+<div class="split section">
+  <section aria-labelledby="stock-h">
+    <header><h2 id="stock-h">Group × component</h2><span class="small muted">select a cell to open its units</span></header>
+    <table class="grid-stock">
+      <thead><tr><th class="g">Group</th>{% for c in comps %}<th>{{ COMPONENTS[c] }}</th>{% endfor %}</tr></thead>
+      <tbody>
+      {% for g in GROUPS %}
+        <tr>
+          <td class="g"><span class="bg {% if g.endswith('-') %}neg{% endif %}">{{ g }}</span></td>
+          {% for c in comps %}
+            {% set s = cells[(g, c)] %}
+            {% set state = 'out' if s.available == 0 else ('low' if s.available < s.reorder_level else 'ok') %}
+            <td>
+              <a class="cell {{ state }}" href="/inventory?group={{ g|urlencode }}&component={{ c }}&status=AVAILABLE"
+                 aria-label="{{ g }} {{ COMPONENTS[c] }}: {{ s.available }} available, reorder level {{ s.reorder_level }}{% if state == 'out' %}, out of stock{% elif state == 'low' %}, low{% endif %}">
+                <span class="v">{{ s.available }}</span>
+                <span class="m">{% if state == 'out' %}OUT{% elif state == 'low' %}LOW{% else %}min {{ s.reorder_level }}{% endif %}{% if s.reserved %} · {{ s.reserved }} held{% endif %}</span>
+                <span class="bar"><i style="width: {{ [100, (s.available * 50 / (s.reorder_level or 1))|int]|min }}%"></i></span>
+              </a>
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <div class="legend"><span>Bar = stock against 2× reorder level</span><span>“held” = reserved for an open request</span></div>
+  </section>
+
+  <div>
+    <section aria-labelledby="alert-h">
+      <header><h2 id="alert-h">Low-stock alerts</h2><span class="num small muted">{{ alerts|length }} open</span></header>
+      {% if alerts %}
+      <table class="tbl"><tbody>
+        {% for a in alerts %}
+        <tr><td><span class="bg {% if a.blood_group.endswith('-') %}neg{% endif %}">{{ a.blood_group }}</span> {{ COMPONENTS[a.component] }}</td>
+            <td class="r num">{{ a.available }} left</td><td class="r small muted">{{ a.raised_at|ts }}</td></tr>
+        {% endfor %}
+      </tbody></table>
+      {% else %}<p class="empty">Every group is at or above its reorder level.</p>{% endif %}
+    </section>
+
+    <section class="section" aria-labelledby="queue-h">
+      <header><h2 id="queue-h">Waiting for stock</h2><a class="small" href="/requests">all requests</a></header>
+      {% if queue %}
+      <ul class="queue">
+        {% for r in queue %}
+        <li>
+          <span class="tag {{ r.urgency }}">{{ r.urgency }}</span>
+          <span class="who">{{ r.units_needed }} × {{ COMPONENTS[r.component] }} <span class="bg">{{ r.patient_group }}</span></span>
+          <span class="num small">{{ r.allocated }}/{{ r.units_needed }}</span>
+          <span class="sub">{{ r.hospital }} · {{ r.created_at|ts }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}<p class="empty">No open requests.</p>{% endif %}
+    </section>
+  </div>
+</div>
+
+<section class="section" aria-labelledby="exp-h">
+  <header><h2 id="exp-h">Expiring within 7 days</h2><span class="small muted">soonest first; reserved units still count, they must be issued in time</span></header>
+  {% if expiring %}
+  <table class="tbl stack">
+    <thead><tr><th>Barcode</th><th>Group</th><th>Component</th><th>Status</th><th>Shelf life left</th><th class="r">Expires</th></tr></thead>
+    <tbody>
+    {% for u in expiring %}
+      <tr>
+        <td data-l="Barcode"><a class="mono" href="/unit/{{ u.unit_id }}">{{ u.barcode }}</a></td>
+        <td data-l="Group"><span class="bg {% if u.blood_group.endswith('-') %}neg{% endif %}">{{ u.blood_group }}</span></td>
+        <td data-l="Component">{{ COMPONENTS[u.component] }}</td>
+        <td data-l="Status"><span class="tag {{ u.status }}">{{ u.status }}</span></td>
+        <td data-l="Shelf life left"><span class="life" aria-hidden="true"><i style="width: {{ [100, ([u.days_left, 0]|max * 100 / u.shelf_days)|int]|min }}%"></i></span><span class="num">{{ u.days_left }}d</span></td>
+        <td data-l="Expires" class="r num">{{ u.expiry_date.strftime('%d %b') }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="empty">Nothing expires in the next 7 days.</p>{% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}{{ title }}{% endblock %} · HemoGrid</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body>
+{% set items = [('dashboard','Stock','/'), ('inventory','Inventory','/inventory'), ('donors','Donors','/donors'), ('screening','Screening','/screening'), ('requests_board','Requests','/requests'), ('camps','Camps','/camps'), ('query_lab','Query lab','/query-lab')] %}
+<aside class="rail">
+  <a class="brand" href="/" aria-label="HemoGrid home">
+    <svg width="26" height="26" viewBox="0 0 26 26" aria-hidden="true"><path d="M13 2C13 2 5 11 5 16a8 8 0 0 0 16 0c0-5-8-14-8-14Z" fill="#A3132A"/><path d="M9 17h8M13 13v8" stroke="#F3F0E8" stroke-width="2"/></svg>
+    <span>HemoGrid<small>Blood bank ledger</small></span>
+  </a>
+  <nav aria-label="Main">
+    {% for ep, label, href in items %}
+    <a href="{{ href }}" {% if request.endpoint == ep or (ep == 'donors' and request.endpoint in ('donor','donor_new')) or (ep == 'inventory' and request.endpoint in ('unit',)) %}aria-current="page"{% endif %}>
+      {{ label }}
+      {% if ep == 'dashboard' and nav.alerts %}<span class="count hot" title="Open low-stock alerts">{{ nav.alerts }}</span>
+      {% elif ep == 'requests_board' and nav.open_requests %}<span class="count" title="Requests waiting for stock">{{ nav.open_requests }}</span>
+      {% elif ep == 'screening' and nav.pending %}<span class="count" title="Donations awaiting screening">{{ nav.pending }}</span>{% endif %}
+    </a>
+    {% endfor %}
+  </nav>
+  <div class="foot">PostgreSQL 16 + MongoDB<br>23CS2013 · DBMS project</div>
+</aside>
+<main id="main">
+  {% for cat, m in get_flashed_messages(with_categories=true) %}
+  <div class="msg {{ cat }}" role="{{ 'alert' if cat == 'error' else 'status' }}">{{ m }}</div>
+  {% endfor %}
+  {% block body %}{% endblock %}
+</main>
+</body>
+</html>

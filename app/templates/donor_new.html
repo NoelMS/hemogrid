@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% from "_m.html" import opts %}
+{% block title %}Register donor{% endblock %}
+{% block body %}
+<div class="page-head"><div><p class="small"><a href="/donors">← Donors</a></p><h1>Register donor</h1><p>Creates the person, donor and first phone in one transaction.</p></div></div>
+<form method="post" class="form-grid" style="max-width:760px">
+  <div><label for="n">Full name</label><input id="n" name="name" required value="{{ request.form.name }}" autocomplete="off"></div>
+  <div><label for="s">Sex</label><select id="s" name="sex"><option value="M">Male</option><option value="F" {% if request.form.sex == 'F' %}selected{% endif %}>Female</option><option value="O">Other</option></select></div>
+  <div><label for="d">Date of birth</label><input id="d" type="date" name="dob" required value="{{ request.form.dob }}"></div>
+  <div><label for="g">Blood group</label><select id="g" name="group" required>{{ opts(GROUPS, request.form.group) }}</select></div>
+  <div><label for="c">City</label><input id="c" name="city" required value="{{ request.form.city or 'Coimbatore' }}"></div>
+  <div><label for="p">Mobile (optional)</label><input id="p" name="phone" class="mono" inputmode="tel" placeholder="+919876543210" value="{{ request.form.phone }}"></div>
+  <div><button class="btn">Register</button></div>
+</form>
+{% endblock %}
