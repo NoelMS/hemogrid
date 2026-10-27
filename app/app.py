@@ -88,9 +88,7 @@ def nav():
 
 @app.route("/favicon.ico")
 def favicon():
-    svg = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26"><path d="M13 2C13 2 5 11 5 16a8 8 0 0 0 16 0c0-5-8-14-8-14Z" fill="#A3132A"/>'
-           '<path d="M9 17h8M13 13v8" stroke="#F3F0E8" stroke-width="2"/></svg>')
-    return svg, 200, {"Content-Type": "image/svg+xml", "Cache-Control": "max-age=86400"}
+    return app.send_static_file("favicon.png")
 
 
 # ------------------------------------------------------------------ dashboard

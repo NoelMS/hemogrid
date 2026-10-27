@@ -4,17 +4,32 @@ Tracks donors, donation camps, lab screening, labelled blood units with expiry d
 
 ## Run it
 
-**One click:** double-click `Start HemoGrid.bat`. It starts PostgreSQL and MongoDB, seeds the database on the first run, starts the app and opens http://127.0.0.1:5057 in your browser. `Stop HemoGrid.bat` shuts everything down.
+**One click:** double-click the HemoGrid shortcut on the Desktop or in the Start menu (both are created the first time), or open `HemoGrid.pyw`. A small launcher window checks the setup and installs whatever is missing:
 
-PostgreSQL and MongoDB are portable binaries in `N:\Tools`. Manual steps:
+| Step | What it checks | If missing |
+|---|---|---|
+| Python environment | private virtual environment in `.venv` | creates it |
+| Application packages | Flask, Markdown, psycopg, pymongo | installs `requirements-app.txt` |
+| PostgreSQL 16 | portable server in the tools folder | downloads and unpacks it (about 320 MB) |
+| MongoDB 7 | portable server in the tools folder | downloads and unpacks it (about 590 MB) |
+| Database servers | data directories and running servers | initialises and starts both |
+| Sample data | schema and demo data | builds and seeds the database |
+| Web application | the app on port 5057 | starts it |
+
+It then opens HemoGrid in its own window, with no browser tabs or address bar. No console windows are opened at any point. When that window is closed, the launcher stops the application and both databases. Starting it a second time while it is running just opens another window.
+
+The tools folder is `N:\Tools` when an N: drive exists, otherwise `%LOCALAPPDATA%\HemoGrid\tools`. Set `HEMO_TOOLS` to choose another place. Logs are in its `logs` subfolder. To stop everything by hand, run `pythonw HemoGrid.pyw --stop`.
+
+Needs Windows 10 or 11 with Python 3.12 or newer (with tkinter) and Microsoft Edge or Chrome.
+
+Manual setup without the launcher:
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File scripts\dbs.ps1 start       # PostgreSQL :54329, MongoDB :27018
-.venv\Scripts\python scripts\seed.py                                   # schema + logic + ~420 donors, ~850 units, 34 requests
-.venv\Scripts\python app\app.py                                        # http://127.0.0.1:5057
+python -m venv .venv
+.venv\Scripts\pip install -r requirements-app.txt
+.venv\Scripts\python scripts\seed.py
+.venv\Scripts\python app\app.py
 ```
-
-Fresh machine: `python -m venv .venv && .venv\Scripts\pip install -r requirements.txt`, and unpack PostgreSQL 16 / MongoDB 7 zips to the paths in `scripts\dbs.ps1`.
 
 ## What is where
 

@@ -1,6 +1,6 @@
 # HemoGrid: talk-through script (about 12 minutes)
 
-Say the quoted parts in your own words. **Bold** lines are things to do on screen. Before you start: double-click **Start HemoGrid**, and keep a PowerShell window open in the project folder.
+Say the quoted parts in your own words. **Bold** lines are things to do on screen. Before you start: double-click the **HemoGrid** shortcut (the app opens in its own window), and keep a PowerShell window open in the project folder.
 
 The theme of the whole talk: **the database does the work, the web page only shows it.**
 
